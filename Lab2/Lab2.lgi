@@ -720,8 +720,8 @@ Reg1
 Reg0
 22 336 90 480 70 0 \NUL
 Logic of each register
-22 330 118 497 98 0 \NUL
-This is for the ALU Inputs
+22 330 118 549 98 0 \NUL
+This is for the ALU Inputs 1 and 2
 22 240 64 614 44 0 \NUL
 The next few pages contain how I transfer the all four bits
 1 79 137 107 118
@@ -793,6 +793,10 @@ CSE 12, Winter 2021
 First bit of ALU input 1
 20 720 60 779 41 0
 res1_0
+22 454 45 683 25 0 \NUL
+Added new placeholder for the ALU
+22 614 64 663 44 0 \NUL
+res1_0
 1 524 461 666 174
 1 516 431 666 168
 1 666 186 557 481
@@ -857,6 +861,10 @@ CSE 12, Winter 2021
 22 236 58 402 38 0 \NUL
 Second bit of ALU input 1
 20 708 42 767 23 0
+res1_1
+22 454 45 683 25 0 \NUL
+Added new placeholder for the ALU
+22 614 64 663 44 0 \NUL
 res1_1
 1 524 461 666 174
 1 516 431 666 168
@@ -1055,6 +1063,10 @@ CSE 12, Winter 2021
 First bit of ALU input 2
 20 706 46 765 27 0
 res2_0
+22 454 45 683 25 0 \NUL
+Added new placeholder for the ALU
+22 614 64 663 44 0 \NUL
+res2_0
 1 524 461 666 174
 1 516 431 666 168
 1 666 186 557 481
@@ -1127,6 +1139,10 @@ CSE 12, Winter 2021
 22 236 58 402 38 0 \NUL
 Second bit of ALU input 2
 20 706 46 765 27 0
+res2_1
+22 454 45 683 25 0 \NUL
+Added new placeholder for the ALU
+22 614 64 663 44 0 \NUL
 res2_1
 1 524 461 666 174
 1 516 431 666 168
@@ -1201,6 +1217,10 @@ CSE 12, Winter 2021
 Third bit of ALU input 2
 20 706 46 765 27 0
 res2_2
+22 454 45 683 25 0 \NUL
+Added new placeholder for the ALU
+22 614 64 663 44 0 \NUL
+res2_2
 1 524 461 666 174
 1 516 431 666 168
 1 666 186 557 481
@@ -1274,6 +1294,10 @@ CSE 12, Winter 2021
 Fourth bit of ALU input 2
 20 706 46 765 27 0
 res2_3
+22 454 45 683 25 0 \NUL
+Added new placeholder for the ALU
+22 614 64 663 44 0 \NUL
+res2_3
 1 524 461 666 174
 1 516 431 666 168
 1 666 186 557 481
@@ -1318,7 +1342,7 @@ res1_0
 19 40 208 99 189 0
 res2_2
 14 253 299 302 250
-22 308 90 346 70 0 \NUL
+22 320 84 358 64 0 \NUL
 ALU3
 19 45 155 104 136 0
 res2_0
@@ -1329,6 +1353,8 @@ res2_3
 31 283 219 332 134 0 1
 20 506 166 565 147 0
 alu3
+22 222 64 496 44 0 \NUL
+This is the first most significant bit of ALU
 1 97 249 284 197
 1 100 280 284 203
 1 284 215 299 274
@@ -1364,8 +1390,10 @@ res1_0
 res2_0
 31 270 208 319 123 0 1
 14 78 142 127 93
-20 498 170 557 151 0
+20 532 146 591 127 0
 alu2
+22 222 64 518 44 0 \NUL
+This is the second most significant bit of ALU
 1 85 167 271 156
 1 87 187 271 162
 1 86 212 271 168
@@ -1374,7 +1402,7 @@ alu2
 1 271 204 284 263
 1 124 117 271 150
 1 316 162 529 229
-1 316 162 499 160
+1 316 162 533 136
 38 18
 22 12 78 52 58 0 \NUL
 Lab 2
@@ -1401,6 +1429,8 @@ res1_0
 res2_1
 20 526 170 585 151 0
 alu1
+22 222 64 500 44 0 \NUL
+This is the third most significant bit of ALU
 1 151 261 367 226
 1 152 316 367 250
 1 151 345 367 256
@@ -1434,6 +1464,8 @@ res1_0
 res1_1
 20 494 210 553 191 0
 alu0
+22 222 64 503 44 0 \NUL
+This is the most least significant bit of ALU
 1 136 127 237 142
 1 136 127 237 148
 1 136 127 237 154
