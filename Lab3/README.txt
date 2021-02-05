@@ -1,5 +1,5 @@
 Nelly Sin
-Nesin
+nesin
 Winter 2021
 Lab 3: ASCII-risks (Asterisks)
 
