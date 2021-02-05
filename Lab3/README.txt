@@ -19,4 +19,4 @@ This file is the program or assembly code for the lab.
 ------------
 INSTRUCTIONS
 
-This program is intended to be run using the MIPS Assembler and Runtime Simulator, MARS. The program will ask for a number greater than 0 and the user will enter a number. 
+This program is intended to run using the MIPS Assembler and Runtime Simulator, MARS. The program will ask for a number greater than 0 and the user must enter a number for it to execute.
