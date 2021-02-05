@@ -24,6 +24,7 @@
 	 move $t2, $v0		#for first loop as a max number
 		
 	 #check if t2 is greater than 0
+	 li $t0, 1
 	 bgtz $t2, first_loop 	# if $t2 is <= 0 print error & back to user_input			
 		
 	 #function to print the error message
@@ -32,43 +33,59 @@
 	 syscall
 	 
 	 j user_input
-		
-	
-   #create the i = 1 to start
-   li $t0, 1		# starting number for num loop
-   li $t1, 0xA		# new line
    
    
-   # create a loop for printing the number for the pyramid 
-   first_loop: NOP 
-      bgt $t0, $t2, program_exit      # for (i =1, i < user_input, i++) then exit program
-	
-      li $v0, 1            # read integer
-      move $a0, $t0      # move $t0 to $a0
-      syscall             #execute the syscall
-      
-      li $v0, 11         # read ASCII
-      la $a0, 0xA         # make a new line
-      syscall            # execute in making a new line
-      
-      addi $t0, $t0, 1	# increment t0 (i) by one
-      
-      li $t3, 1
-      # create a loop for adding the asterisks 
-      second_loop: NOP
-      bgt $t3, $t0, first_loop      #if t3 > t0 go back to first_loop
-      
-      li $v0, 11                     # print a ascii 
-      la $a0, 0x2A                   # print an asterisk
-      syscall                        # system call
-      
-      addi $t3, $t3, 1               # update the t3 counter 
-      j second_loop                  # jump back to the second_loop
-      
+      # create a loop for printing the number for the pyramid 
+      first_loop: NOP 
+	 # create a loop for adding the asterisks 
+	 beq $t0, 1, skip_loop
+	 
+         second_loop: NOP
+            bge $t3, $t0, skip_loop      #if t3 >= t0 go back to first_loop
+
+            li $v0, 11                     # read an ascii 
+            la $a0, 0x2A                   # print an asterisk
+            syscall                        # system call
+    
+            li $v0, 11                     # read an ascii
+            la $a0, 0xB                    # print a tab
+            syscall                        # system call
+            
+            addi $t3, $t3, 1               # update the t3 counter 
+            
+            j second_loop                  # jump back to the second_loop
+            
+	 skip_loop:
+	    li $t3, 1
+	    li $v0, 1            # read integer
+            move $a0, $t0      # move $t0 to $a0
+            syscall             #execute the syscall
+            
+               beq $t0, 1, skip_loop
+               third_loop: NOP
+               bge $t3, $t0, skip_loop      #if t3 >= t0 go back to first_loop
+               
+               li $v0, 11                    # read an ascii
+               la $a0, 0xB                   # print a tab
+               syscall                       # system call
+               
+               li $v0, 11                     # print a ascii 
+               la $a0, 0x2A                   # print an asterisk
+               syscall                        # system call
+
+               addi $t3, $t3, 1               # update the t3 counter 
+               j third_loop                  # jump back to the second_loop
+            
+            
+            li $v0, 11         # read ASCII
+            la $a0, 0xA         # make a new line
+            syscall            # execute in making a new line
+            
+            addi $t0, $t0, 1	# increment t0 (i) by one
+            
+            bgt $t0, $t2,  program_exit # for (i =1, i < user_input, i++) then exit program 
+	    j first_loop 
+	    
       program_exit:		
          li $v0, 10		# command for exiting the program
          syscall
-      
-      
-      
-      
