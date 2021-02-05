@@ -52,7 +52,7 @@
             j second_loop                # jump back to the second_loop
          
 	 skip_loop:
-	    li $t3, 1
+	    li $t3, 1           # start $t3 = 1 as third_loop's counter
 	    li $v0, 1            # read integer
             move $a0, $t0      # move $t0 to $a0
             syscall             #execute the syscall
@@ -79,12 +79,12 @@
             la $a0, 0xA         # make a new line
             syscall            # execute in making a new line
             
-            addi $t0, $t0, 1	# increment t0 (i) by one
+            addi $t0, $t0, 1	          # increment t0 (i) by one
             
-            bgt $t0, $t2,  program_exit # for (i =1, i < user_input, i++) then exit program 
-	    li $t3, 1
-	    j first_loop 
+            bgt $t0, $t2,  program_exit    # for (i =1, i < user_input, i++) then exit program 
+	    li $t3, 1                     # $t3 = 1 again as a counter for second loop
+	    j first_loop                # jump to the first loop
 	    
-      program_exit:		
+      program_exit:		# this is program exit for the program
          li $v0, 10		# command for exiting the program
-         syscall
+         syscall               # system call to execute
