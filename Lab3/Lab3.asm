@@ -51,14 +51,12 @@
 
             j second_loop                                                             # jump back to the second_loop
 
-         skip_loop:
-            li $t3, 1                                                                 # start $t3 = 1 as third_loop's counter
+         skip_loop:                                                                
             li $v0, 1                                                                 # read integer
             move $a0, $t0                                                             # move $t0 to $a0
             syscall                                                                   #execute the syscall
 
-
-            li $t3, 1
+            li $t3, 1                                                                 # start $t3 = 1 as third_loop's counter 
             beq $t0, 1, cont_skip_loop                                                # if $t0 <= 1 continue to skip loop
             third_loop: NOP                                                           # print the second asterisk set
                bge $t3, $t0, cont_skip_loop                                           #if t3 >= t0 continue skip_loop
