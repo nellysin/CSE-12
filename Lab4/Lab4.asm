@@ -7,21 +7,15 @@
    buffer: .space 20
    
 .text
-
-   lw $a0, 8 ($a1)
-   la $a0, buffer
-   li $a1, 20
-   move $t0, $a0
-
-   
-   li $v0, 4
-   la $a0, prompt
-   syscall
-   
-   la $a0, buffer
-   move $a0, $t0
-   li $v0, 4
-   syscall
+   argument_input:
+      li $v0, 4                 # syscall print string 
+      la $a0, prompt            # print the prompt
+      syscall
+      
+      lw $a0, 0($a1)            # get file name
+      
+      li $v0, 4                 # print the file name
+      syscall
    
    program_exit:
       li $v0, 10
