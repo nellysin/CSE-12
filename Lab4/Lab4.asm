@@ -27,7 +27,7 @@
       move_char: NOP             # loop to check characters
       
          first_char:
-         lb $a0, ($t0)
+         lb $a0, ($0)
          blt $a0, 'A', first_lower
          ble $a0, 'Z', valid_char
          
@@ -36,6 +36,24 @@
          bgt $a0, 'z', program_exit
          
          valid_char: NOP
+         
+            bgt $t1, 20 program_exit
+            lb $a0, ($t0)
+            beqz $a0, program_exit
+            li $v0, 11
+            
+            loop_upper: NOP
+            blt $a0, 'A', loop_lower
+            ble $a0, 'Z', next_char
+            
+            
+      
+         next_char:
+            addi $t1, $t1, 1                 # move to the next character
+            addi $t0, $t0, 1
+            syscall
+            
+            j valid_char
    
    program_exit:
       li $v0, 10
