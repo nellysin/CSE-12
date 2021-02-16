@@ -17,7 +17,7 @@
       li $v0, 4                 # print the file name
       syscall
       
-      move $t0, a0              # moving $a0 to $t0 as temporary
+      move $t0, $a0              # moving $a0 to $t0 as temporary
       
       li $v0, 11
       la $a0, 0xA               # this is for visual
