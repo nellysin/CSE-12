@@ -19,8 +19,9 @@
       
       move $t0, $a0              # moving $a0 to $t0 as temporary
       
-      li $v0, 11
-      la $a0, 0xA               # this is for visual
+      li $v0, 11                # print new line
+      la $a0, 0xA               # this is for visual 
+      syscall 
       
       li $t1, 0                 # this is the counter for num of characters
       
@@ -41,13 +42,17 @@
             beqz $a0, program_exit               # if $a0 has no char then program_exit
             li $v0, 11                           # this is for visual (print character)
             
-            loop_upper: NOP                      # loop to check char if it is A-Z
+            loop_upper: NOP                      # check if $a0 is A-Z
                blt $a0, 'A', loop_lower          # if $a0 is lower check lower case
                ble $a0, 'Z', next_char           # if $a0 is less than Z go to next char
+               
+            loop_lower: NOP                      # check if $a0 is a-z
+               blt $a0, 'a', loop_num            # if $a0 is less than a then try loop_num
+               ble $a0, 'z', next_char           # if $a0 is less than or equal to 9 go next char
             
             loop_num: NOP                        # loop for checking 0-9
                blt $a0, '0', loop_dot            # if less than 0 then try loop_dot
-               ble $a0, '9', next_char           # if less than 9 go to next char
+               ble $a0, '9', next_char           # if less or equal than 9 go to next char
             
             loop_dot: NOP                        # loop for checking a period
                bne $a0, '.', loop_under          # if $a0 is not equal to a period try loop_under
