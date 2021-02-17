@@ -2,7 +2,7 @@
 
    prompt: .asciiz "You entered the file: \n"
    
-   error: .asciiz "ERROR: Invalid program argument"
+   error: .asciiz "\nERROR: Invalid program argument \n"
    
    buffer: .space 20
    
@@ -20,8 +20,8 @@
       move $t0, $a0              # moving $a0 to $t0 as temporary
       
       li $v0, 11                # print new line
-      la $a0, 0xA               # this is for visual 
-      syscall 
+      la $a0, 0xA               # ascii for new line
+      syscall                   # execute
       
       li $t1, 0                 # this is the counter for num of characters
       
@@ -37,10 +37,10 @@
             bgt $a0, 'z', print_error            # if it is larger than z then print an error
          
          valid_char: NOP                         # loop to check if the name is valid
-            bgt $t1, 20 print_error              # if the coutner is greater than 20 print error
+            bgt $t1, 20, print_error              # if the coutner is greater than 20 print error
             lb $a0, ($t0)                        # load byte to the first character
             beqz $a0, program_exit               # if $a0 has no char then program_exit
-            li $v0, 11                           # this is for visual (print character)
+            #li $v0, 11                           # this is for visual (print character)
             
             loop_upper: NOP                      # check if $a0 is A-Z
                blt $a0, 'A', loop_lower          # if $a0 is lower check lower case
@@ -72,7 +72,7 @@
    print_error:                                  # to print the error message
       li $v0, 4                                  # print a string
       la $a0, error                              # print the written error 
-      syscall                                    # execute
+      #syscall                                    # execute
    
    program_exit:                                 # to program exit 
       li $v0, 10                                 # syscall to exit the program
