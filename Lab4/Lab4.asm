@@ -1,12 +1,32 @@
+#################################################################################################################### 
+# Created by: Sin, Nelly                                                                                            #     
+#              nesin                                                                                               #        
+#             18, February, 2021                                                                                   #     
+#                                                                                                                  #         
+# Assignment: Lab4, Syntax Checker                                                                                 #           
+#             CSE 12/ 12L, Computer Systems and Assembly Language                                                  #
+#             UC Santa Cruz, Winter 2020                                                                           #            
+#                                                                                                                  #           
+# Description: This program opens a file. Within the file, it will find the unconnected brackets                   #
+#                                                                                                                  #             
+# Notes:        This program is intended to be run frm the MARS IDE                                                # 
+####################################################################################################################
+
 .data
 
-   prompt: .asciiz "You entered the file: \n"
+   prompt: .asciiz "You entered the file:\n"
    
    error: .asciiz "\nERROR: Invalid program argument \n"
    
-   error2: .asciiz "\nERROR - There is a brace mismatch:  "
+   mismatch: .asciiz "\nERROR - There is a brace mismatch:"
+   mismatch_1: .asciiz " at index \n"
+   
+   success: .asciiz "\nSUCCESS: There are" 
+   success_1: .asciiz " of braces. \n"
    
    buffer: .space 128   # load each character from the content
+   
+   newLine: .asciiz "\n"
    
 .text
    argument_input:
@@ -21,8 +41,7 @@
       
       move $t0, $a0              # moving $a0 to $t0 as temporary
       
-      li $v0, 11                # print new line
-      la $a0, 0xA               # ascii for new line
+      la $a0, newLine               # ascii for new line
       syscall                   # execute
       
       li $t1, 0                 # this is the counter for num of characters
@@ -78,29 +97,103 @@
      
       j program_exit
    
-   find_file:
+   file:                                            # rules of opening, reading, and closing the file
       open_file:                                    # opening the file given by file name
          li $v0, 13                                 # syscall for opening the file
          la $a0, ($s0)                              # get the file name
-         li $a1, 0                                  # open for reading                   
+         li $a1, 0                                  # open for reading (0)                  
          syscall                                    # execute open file
-         move $s0, $v0                              # save $v0 to $s0
+         move $s0, $v0                              # save contents from $v0 to $s0
       
       read_file:                                    # reading file
          li $v0, 14                                 # sysall for reading the file
-         move $a0, $s0                              
-         la $a1, buffer
-         la $a2, 128                           
-         syscall
+         move $a0, $s0                              # get the saved file
+         la $a1, buffer                             # this buffer will hold the content in the file
+         la $a2, 128                                # how much to take in 
+         syscall                                    # execute the read_file
+         
+         
+      stacking: NOP                                 # storing values
+         li $t4, 0                                  # pair count
+         load_byte: NOP
+            la $a0, buffer                             # this stores the content from the file
+            lb $a0, buffer ($t3)                       # load each value in $a0 by $t3
+            
+            check_bracket:                            # where the pointer is, count each bracket (if its a "(", "}", "]")
+               beqz $a0, close_file                    # if $a0 = 0 then close file        
+               
+               left_parenth:
+                  bne $a0, '(', right_parenth              # if the pointer != '(', try left_parenth
+                     push_parenth:                         # save it to the stack
+                        addi $sp, $sp, -1                 # save space on the stack (push)
+                        sb $a0, 0($sp)                    # save byte ($a0) from the tack
+                     add $t3, $t3, 1                            # move to the next character
+               
+               right_parenth: 
+                  bne $a0, ')', left_brack             # if $a0 != ')' try left_back
+                     pop_parenth:                        # take from the ')' stack
+                        addi $sp, $sp, 1                # take space on the stack (pop) 
+                        lb $a0, 0 ($sp)                 # load byte from the stack
+                     add $t4, $t4, 1                 # count as a pair ($t4)
+                     add $t3, $t3, 1                            # move to the next character
+                     
+               left_brack:
+                  bne $a0, '{', right_brack              # check if $a0 != } try right_brack
+                     push_brack:                         # store brack into stack
+                        addi $sp, $sp, -1                     # save space on the stack (push)
+                        sb $a0, 0($sp)                          # save byte ($a0) from the tack
+                     add $t3, $t3, 1                            # move to the next character
+               
+               right_brack:
+                  bne $a0, '}', left_square          # if $a0 is '}' try left_square
+                     pop_brack:                         # save to the stack
+                        lb $a0, 0 ($sp)                   # load byte from the stack
+                        addi $sp, $sp, 1                  # take space on the stack (pop) 
+                     add $t4, $t4, 1                  # count as a pair ($t4)
+                     add $t3, $t3, 1                            # move to the next character
+               
+               left_square:
+                  bne $a0, '[', right_square              # check if $a0 != ']' try right_square
+                     push_square:                         # store brack into stack
+                        addi $sp, $sp, -1                 # save space on the stack (push)
+                     sb $a0, 0($sp)                          # save byte ($a0) from the tack
+                     add $t3, $t3, 1                            # move to the next character               
+               
+               right_square:
+                  bne $a0, ']', load_byte          # if $a0 is ']' then error message
+                     pop_square:                         # take from the ')' stack
+                        addi $sp, $sp, 1                  # take space on the stack (pop) 
+                        lb $a0, 0 ($sp)                   # load byte from the stack
+                     add $t4, $t4, 1                  # count as a pair ($t4)
+                     add $t3, $t3, 1                 # move to the next character
+                                                       
+               print_mismatch:                          # printing error
+                  li $v0, 4                             # print the first half  
+                  la $a0, mismatch                      # deallocate the mismatched bracket
+                  syscall                               
+                                                   # print the second half of error prompt
+                                                       
+               print_success:                           # print the success 
+                  li $v0 , 4                            # print the counted num of pairs + the success prompt
+                  la $a0 , success                      # syscall to print success
+                  syscall
+                  
+                  li $v0, 5                             # print the number of pairs
+                  la $a0, ($t4)                           # syscall to print int from $t4
+                  syscall                               # syscall
+                  
+                  li $v0, 4                             # print second half os success
+                  la $a0, success_1                     # printing from success_1
+                  syscall                               # execute
+                               
+      close_file:                                    # to close the file after finished
+         li $v0, 16                                  # sysall for closing file
+         move $a0, $s0                               # move file 
+         syscall                                     # close file
       
-      print:                                        # visual representation
-         li $v0, 4
-         la $a0, buffer
-         syscall 
-      
-      program_exit:                                 # to program exit 
-      li $v0, 10                                 # syscall to exit the program
-      syscall                                    # execute
+      program_exit:                                  # to program exit 
+      li $v0, 10                                     # syscall to exit the program
+      syscall                                        # execute
    
       
   
