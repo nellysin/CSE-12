@@ -4,16 +4,18 @@
    
    error: .asciiz "\nERROR: Invalid program argument \n"
    
-   buffer: .space 20
+   error2: .asciiz "\nERROR - There is a brace mismatch:  "
+   
+   buffer: .space 128   # load each character from the content
    
 .text
    argument_input:
       li $v0, 4                 # syscall print string 
       la $a0, prompt            # print the prompt
-      syscall
+      syscall                   # execute
       
       lw $a0, 0($a1)            # get file name
-      
+      move $s0, $a0             # save file name use later to open file
       li $v0, 4                 # print the file name
       syscall
       
@@ -39,7 +41,7 @@
          valid_char: NOP                         # loop to check if the name is valid
             bgt $t1, 20, print_error              # if the coutner is greater than 20 print error
             lb $a0, ($t0)                        # load byte to the first character
-            beqz $a0, program_exit               # if $a0 has no char then program_exit
+            beqz $a0, open_file                  # if $a0 has no char then program_exit
             #li $v0, 11                           # this is for visual (print character)
             
             loop_upper: NOP                      # check if $a0 is A-Z
@@ -65,15 +67,40 @@
             next_char:                           # this is going to the next character
             addi $t1, $t1, 1                     # increment the counter by 1
             addi $t0, $t0, 1                     # move to the next character  
-            syscall                              # system call
+            #syscall                             # system call (this is for printing visual)
             
             j valid_char                         # jump back to valid_char
-   
-   print_error:                                  # to print the error message
+            
+    print_error:                                 # to print the error message
       li $v0, 4                                  # print a string
       la $a0, error                              # print the written error 
-      #syscall                                    # execute
+      syscall                                    # execute
+     
+      j program_exit
    
-   program_exit:                                 # to program exit 
+   find_file:
+      open_file:                                    # opening the file given by file name
+         li $v0, 13                                 # syscall for opening the file
+         la $a0, ($s0)                              # get the file name
+         li $a1, 0                                  # open for reading                   
+         syscall                                    # execute open file
+         move $s0, $v0                              # save $v0 to $s0
+      
+      read_file:                                    # reading file
+         li $v0, 14                                 # sysall for reading the file
+         move $a0, $s0                              
+         la $a1, buffer
+         la $a2, 128                           
+         syscall
+      
+      print:                                        # visual representation
+         li $v0, 4
+         la $a0, buffer
+         syscall 
+      
+      program_exit:                                 # to program exit 
       li $v0, 10                                 # syscall to exit the program
       syscall                                    # execute
+   
+      
+  
