@@ -1,7 +1,7 @@
 #################################################################################################################### 
 # Created by: Sin, Nelly                                                                                            #     
 #              nesin                                                                                               #        
-#             18, February, 2021                                                                                   #     
+#             16, February, 2021                                                                                   #     
 #                                                                                                                  #         
 # Assignment: Lab4, Syntax Checker                                                                                 #           
 #             CSE 12/ 12L, Computer Systems and Assembly Language                                                  #
@@ -21,6 +21,8 @@
    mismatch: .asciiz "\nERROR - There is a brace mismatch:"
    mismatch_1: .asciiz " at index \n"
    
+   stacked_braces: .asciiz "\nERROR - Braces(s) still on stack: "
+   
    success: .asciiz "\nSUCCESS: There are" 
    success_1: .asciiz " of braces. \n"
    
@@ -29,6 +31,7 @@
    newLine: .asciiz "\n"
    
 .text
+   la $s1, ($sp)
    argument_input:
       li $v0, 4                 # syscall print string 
       la $a0, prompt            # print the prompt
@@ -107,84 +110,107 @@
       
       read_file:                                    # reading file
          li $v0, 14                                 # sysall for reading the file
-         move $a0, $s0                              # get the saved file
+         move $a0, $s0                              # get the saved file name
          la $a1, buffer                             # this buffer will hold the content in the file
          la $a2, 128                                # how much to take in 
          syscall                                    # execute the read_file
          
          
-      stacking: NOP                                 # storing values
+      stacking: NOP                                 # stacking brackets from file text
          li $t4, 0                                  # pair count
-         load_byte: NOP
+         load_byte: NOP                               # loads each byte from the text
             la $a0, buffer                             # this stores the content from the file
             lb $a0, buffer ($t3)                       # load each value in $a0 by $t3
+            li $v0, 11
+            syscall
             
-            check_bracket:                            # where the pointer is, count each bracket (if its a "(", "}", "]")
-               beqz $a0, close_file                    # if $a0 = 0 then close file        
+            check_bracket: NOP                            # where the pointer is, count each bracket (if its a "(", "}", "]")
+               beqz $a0, check_stack                    # if $a0 = 0 then close file        
                
-               left_parenth:
+               left_parenth: NOP
                   bne $a0, '(', right_parenth              # if the pointer != '(', try left_parenth
                      push_parenth:                         # save it to the stack
                         addi $sp, $sp, -1                 # save space on the stack (push)
-                        sb $a0, 0($sp)                    # save byte ($a0) from the tack
-                     add $t3, $t3, 1                            # move to the next character
+                        sb $a0, ($sp)                    # save byte ($a0) from the tack
+                        j next_brack                      # go to the next character in the text
                
-               right_parenth: 
+               right_parenth: NOP 
                   bne $a0, ')', left_brack             # if $a0 != ')' try left_back
-                     pop_parenth:                        # take from the ')' stack
-                        addi $sp, $sp, 1                # take space on the stack (pop) 
-                        lb $a0, 0 ($sp)                 # load byte from the stack
-                     add $t4, $t4, 1                 # count as a pair ($t4)
-                     add $t3, $t3, 1                            # move to the next character
+                     bne $a0, $sp, push_parenth      # if it is not equal to the top stack push to stack
+                        pop_parenth:                        # take from the ')' stack
+                           lb $a0, ($sp)                 # load byte from the stack
+                           addi $sp, $sp, 1                # take top space on the stack (pop)
+                           add $t4, $t4, 1                 # count as a pair ($t4)
+                           j next_brack                    # go to the next character in the text
                      
-               left_brack:
+               left_brack: NOP
                   bne $a0, '{', right_brack              # check if $a0 != } try right_brack
                      push_brack:                         # store brack into stack
                         addi $sp, $sp, -1                     # save space on the stack (push)
-                        sb $a0, 0($sp)                          # save byte ($a0) from the tack
-                     add $t3, $t3, 1                            # move to the next character
+                        sb $a0, ($sp)                          # save byte ($a0) from the tack
+                        j next_brack                        # go to the next character in the text
                
-               right_brack:
-                  bne $a0, '}', left_square          # if $a0 is '}' try left_square
-                     pop_brack:                         # save to the stack
-                        lb $a0, 0 ($sp)                   # load byte from the stack
-                        addi $sp, $sp, 1                  # take space on the stack (pop) 
-                     add $t4, $t4, 1                  # count as a pair ($t4)
-                     add $t3, $t3, 1                            # move to the next character
-               
-               left_square:
+               right_brack: NOP
+                  bne $a0, '}', left_square                # if $a0 is '}' try left_square
+                     bne $a0, $sp, push_brack           # if it is not equal to the top stack push to stack
+                        pop_brack:                         # save to the stack
+                           lb $a0,  ($sp)                   # load byte from the stack
+                           addi $sp, $sp, 1                  # take top space on the stack (pop)
+                           add $t4, $t4, 1                  # count as a pair ($t4)
+                           j next_brack                     # go to the next character in the text
+                   
+               left_square: NOP
                   bne $a0, '[', right_square              # check if $a0 != ']' try right_square
                      push_square:                         # store brack into stack
                         addi $sp, $sp, -1                 # save space on the stack (push)
-                     sb $a0, 0($sp)                          # save byte ($a0) from the tack
-                     add $t3, $t3, 1                            # move to the next character               
+                        sb $a0, ($sp)                          # save byte ($a0) from the tack
+                        j next_brack                      # go to the next character in the text
                
-               right_square:
-                  bne $a0, ']', load_byte          # if $a0 is ']' then error message
-                     pop_square:                         # take from the ')' stack
-                        addi $sp, $sp, 1                  # take space on the stack (pop) 
-                        lb $a0, 0 ($sp)                   # load byte from the stack
-                     add $t4, $t4, 1                  # count as a pair ($t4)
-                     add $t3, $t3, 1                 # move to the next character
-                                                       
+               right_square: NOP
+                  bne $a0, ']', next_brack          # if $a0 is ']' then error message
+                     pop_square:                         # take from the ']' stack
+                        bne $a0, $sp, push_square      # if it is not equal to the top stack push to stack
+                           lb $a0, ($sp)                   # load byte from the stack
+                           addi $sp, $sp, 1                  # take top space on the stack (pop) 
+                           add $t4, $t4, 1                  # count as a pair ($t4)
+                           j next_brack               # go to the next character in the text
+
+               next_brack: NOP
+                  add $t3, $t3, 1                       # move to the next character
+                  j load_byte                           # jump back to load_byte
+               
+               check_stack:                              # checking what is in the stack
+                  beq $sp, $s1, print_success                # if stack == 0 then print_success (nothing in the stack)
+                     beq $sp, 1, print_mismatch          # else if stack == 1 there is a print_mismatch (only one thing)
+                        j print_stacked                  # else the brackets are stacked and print_stacked
+                  
                print_mismatch:                          # printing error
                   li $v0, 4                             # print the first half  
                   la $a0, mismatch                      # deallocate the mismatched bracket
                   syscall                               
-                                                   # print the second half of error prompt
-                                                       
+                                                         # print the second half of error prompt
+                  j close_file                           # jump to close file
+                  
+               print_stacked:
+                  li $v0, 4                        # print stacked braces
+                  la $a0, stacked_braces             # print the remaining braces
+                  
+                  j close_file                       # jump to close_file
+                                                  
                print_success:                           # print the success 
                   li $v0 , 4                            # print the counted num of pairs + the success prompt
                   la $a0 , success                      # syscall to print success
-                  syscall
-                  
-                  li $v0, 5                             # print the number of pairs
-                  la $a0, ($t4)                           # syscall to print int from $t4
-                  syscall                               # syscall
-                  
-                  li $v0, 4                             # print second half os success
-                  la $a0, success_1                     # printing from success_1
                   syscall                               # execute
+                  
+                  #li $v0, 5                             # print the number of pairs
+                  #la $a0, ($t4)                           # syscall to print int from $t4
+                  #syscall                               # syscall
+                  
+                  #li $v0, 4                             # print second half os success
+                  #la $a0, success_1                     # printing from success_1
+                  #syscall                               # execute
+                  
+                  j close_file                          # jump to close file
                                
       close_file:                                    # to close the file after finished
          li $v0, 16                                  # sysall for closing file
