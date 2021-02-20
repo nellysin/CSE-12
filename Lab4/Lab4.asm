@@ -70,23 +70,23 @@
             #li $v0, 11                           # this is for visual (print character)
             
             loop_upper: NOP                      # check if $a0 is A-Z
-               blt $a0, 'A', loop_lower          # if $a0 is lower check lower case
-               ble $a0, 'Z', next_char           # if $a0 is less than Z go to next char
+               blt $a0, 65, loop_lower          # if $a0 is lower check lower case
+               ble $a0, 90, next_char           # if $a0 is less than Z go to next char
                
             loop_lower: NOP                      # check if $a0 is a-z
-               blt $a0, 'a', loop_num            # if $a0 is less than a then try loop_num
-               ble $a0, 'z', next_char           # if $a0 is less than or equal to 9 go next char
+               blt $a0, 97, loop_num            # if $a0 is less than a then try loop_num
+               ble $a0, 122, next_char           # if $a0 is less than or equal to 9 go next char
             
             loop_num: NOP                        # loop for checking 0-9
-               blt $a0, '0', loop_dot            # if less than 0 then try loop_dot
-               ble $a0, '9', next_char           # if less or equal than 9 go to next char
+               blt $a0, 48, loop_dot            # if less than 0 then try loop_dot
+               ble $a0, 57, next_char           # if less or equal than 9 go to next char
             
             loop_dot: NOP                        # loop for checking a period
-               bne $a0, '.', loop_under          # if $a0 is not equal to a period try loop_under
+               bne $a0, 46, loop_under          # if $a0 is not equal to a period try loop_under
                   j next_char                    # else go to the next character
             
             loop_under: NOP                      # loop for checking a underscore
-               bne $a0, '_', print_error         # if $a0 is not equal to underscore print error
+               bne $a0, 95, print_error         # if $a0 is not equal to underscore print error
                   j next_char                    # else go to next character
       
             next_char:                           # this is going to the next character
@@ -219,14 +219,27 @@
                   j close_file                           # jump to close file
                   
                print_stacked:
-               beqz $a0, close_file
-                  lb $a0, ($sp)                 # load byte from the stack
                   li $v0, 4                        # print stacked braces
                   la $a0, stacked_braces             # print the remaining braces
-                  addiu $sp, $sp, 1                # take top space on the stack (pop)
                   syscall
                   
-                  j print_stacked
+                  stack_error: NOP
+                  beq $sp, $s1, end_statement
+                     lb $a0, ($sp)                 # load byte from the stack
+                     li $v0, 11                    # then print syscall to print asciiz
+                     syscall                       # execute
+                  
+                     addiu $sp, $sp, 1             # remove top space on the stack (pop)
+                     
+                     j stack_error
+                  
+                  end_statement:
+                     li $v0, 4
+                     la $a0, newLine
+                     syscall
+                     
+                     j close_file
+                  
                                                   
                print_success:                           # print the success 
                   li $v0 , 4                            # print the counted num of pairs + the success prompt
