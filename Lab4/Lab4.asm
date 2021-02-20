@@ -18,17 +18,18 @@
    
    error: .asciiz "\nERROR: Invalid program argument \n"
    
-   mismatch: .asciiz "\nERROR - There is a brace mismatch:"
-   mismatch_1: .asciiz " at index \n"
+   mismatch: .asciiz "\nERROR - There is a brace mismatch: "
+   mismatch_1: .asciiz " at index "
    
    stacked_braces: .asciiz "\nERROR - Braces(s) still on stack: "
    
-   success: .asciiz "\nSUCCESS: There are" 
+   success: .asciiz "\nSUCCESS: There are " 
    success_1: .asciiz " of braces. \n"
    
    buffer: .space 128   # load each character from the content
    
    newLine: .asciiz "\n"
+   
    
 .text
    move $s1, $sp                # set $s1 from $sp (wil later check if the stack is 0)
@@ -55,7 +56,7 @@
       
          first_char:                             # check the first character of the name
             lb $a0, ($t0)                         # load byte to the first character
-            blt $a0, 'A', first_lower            # check if it is less than A try lower case
+            blt $a0, 65, first_lower            # check if it is less than A try lower case
             ble $a0, 'Z', valid_char             # check if it is less than Z
          
          first_lower:                            # first character to check the lower case
@@ -125,47 +126,48 @@
          load_byte: NOP                               # loads each byte from the text
             #la $a0, buffer                             # this stores the content from the file
             lb $a0, ($t3)                           # load each value in $a0 by $t3
-            li $v0, 11                                   
-            syscall
+            #li $v0, 11                              # this is printing what's inside the file 1 by 1
+            #syscall                                  # for visual representation
             
             
             check_bracket: NOP                            # where the pointer is, count each bracket (if its a "(", "}", "]")
                beqz $a0, check_stack                    # if $a0 = 0 then close file        
+               li $t6, 0                                   # reset/ set $t6 to be 0 to load byte from the stack
                
                left_parenth: NOP
-                  bne $a0, '(', right_parenth              # if the pointer != '(', try left_parenth
+                  bne $a0, 40, right_parenth              # if the pointer != '(', try left_parenth
                     lb $t6, ($sp)                      # check the top stack by loading it to $s2
-                    bne $t6, '(', push_brack          # if $s2 is not '(' then also push to the stack
+                    bne $t6, 40, push_brack          # if $t6 is not '(' then also push to the stack
                        j push_brack                           # push/ store the bracket to the stack
                
                right_parenth: NOP 
-                  bne $a0, ')', left_brack             # if $a0 != ')' try left_back
+                  bne $a0, 41, left_brack             # if $a0 != ')' try left_back
                      lb $t6, ($sp)                      # check the top stack by loading it to $s2
-                     bne $t6, '(', mismatch          # if $s2 is not '(' then there is a mismatch
+                     bne $t6, 40, print_mismatch          # if $t6 is not '(' then there is a mismatch
                        j pop_brack                     # else pop the bracket from the stack
                      
                left_brack: NOP
-                  bne $a0, '{', right_brack              # check if $a0 != } try right_brack
+                  bne $a0, 123, right_brack              # check if $a0 != } try right_brack
                     lb $t6, ($sp)                      # check the top stack by loading it to $s2
-                    bne $t6, '{', push_brack          # if $s2 is not '{' then also push to the stack
-                       j push_brack                           # push/ store the bracket to the stack
+                    bne $t6, 123, push_brack          # if $t6 is not '{' then also push to the stack
+                       j push_brack                      # push/ store the bracket to the stack
                
                right_brack: NOP
-                  bne $a0, '}', left_square                # if $a0 is '}' try left_square
+                  bne $a0, 125, left_square                # if $a0 is '}' try left_square
                      lb $t6, ($sp)                      # check the top stack by loading it to $s2
-                     bne $t6, '{', mismatch          # if $s2 is not '{' then there is a mismatch
+                     bne $t6, 123, print_mismatch          # if $t6 is not '{' then there is a mismatch
                        j pop_brack                     # else pop the bracket from the stack
                    
                left_square: NOP
-                  bne $a0, '[', right_square              # check if $a0 != ']' try right_square
+                  bne $a0, 91, right_square              # check if $a0 != ']' try right_square
                      lb $t6, ($sp)                      # check the top stack by loading it to $s2
-                     bne $t6, '[', push_brack          # if $s2 is not '[' then also push to the stack
-                        j push_brack                           # push/ store the bracket to the stack
+                     bne $t6, 91, push_brack          # if $t6 is not '[' then also push to the stack
+                        j push_brack                  # push/ store the bracket to the stack
                
                right_square: NOP
-                  bne $a0, ']', next_brack          # if $a0 is ']' then error message
+                  bne $a0, 93, next_brack          # if $a0 is ']' then error message
                      lb $t6, ($sp)                      # check the top stack by loading it to $s2
-                     bne $t6, '[', mismatch          # if $s2 is not '[' then there is a mismatch
+                     bne $t6, 91, print_mismatch          # if $t6 is not '[' then there is a mismatch
                        j pop_brack                     # else pop the bracket from the stack
 
 
@@ -185,7 +187,8 @@
                   
                next_brack: NOP
                   addi $t3, $t3, 1                       # move to the next character
-                  addi $t5, $t5, 1
+                  addi $t5, $t5, 1                       # index for where the mismatched bracket is
+                  
                   j load_byte                           # jump back to load_byte
                  
                check_stack:                              # checking what is in the stack
@@ -197,10 +200,22 @@
                   la $a0, mismatch                      # deallocate the mismatched bracket
                   syscall   
                   
-                  lb $a0, ($t3)                           # load from stack
-                  li $v0, 11
+                  lb $a0, ($t3)                           # load the bracket 
+                  li $v0, 11                              # print the bracket 
                   syscall
-                                              
+                  
+                  li $v0, 4                               # syscall to print a string
+                  la $a0, mismatch_1                      # the second part of the mismatch error
+                  syscall                                 # execute
+                  
+                  li $v0, 1                               # syscall to print integer 
+                  la $a0, ($t5)                           # print the location of the mismatch
+                  syscall                                 # execute
+                  
+                  li $v0, 4
+                  la $a0, newLine
+                  syscall
+                                 
                   j close_file                           # jump to close file
                   
                print_stacked:
@@ -217,17 +232,16 @@
                   li $v0 , 4                            # print the counted num of pairs + the success prompt
                   la $a0 , success                      # syscall to print success
                   syscall                               # execute
+
+                  li $v0, 1                             # print the number of pairs
+                  la $a0, ($t4)                           # syscall to print int from $t4
+                  syscall                               # syscall
+                  
+                  li $v0, 4                             # print second half os success
+                  la $a0, success_1                     # printing from success_1
+                  syscall                               # execute
                   
                   j close_file                          # jump to close file
-                  
-                  #li $v0, 5                             # print the number of pairs
-                  #la $a0, ($t4)                           # syscall to print int from $t4
-                  #syscall                               # syscall
-                  
-                  #li $v0, 4                             # print second half os success
-                  #la $a0, success_1                     # printing from success_1
-                  #syscall                               # execute
-                  
                                
       close_file:                                    # to close the file after finished
          li $v0, 16                                  # sysall for closing file
