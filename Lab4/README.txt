@@ -33,7 +33,7 @@ It includes a text in which the program finds a mismatch.
 -
 test3.txt 
 
-his file is one of the three test cases.
+This file is one of the three test cases.
 It includes a text in which the program finds stacked brackets.
 
 --------------------
