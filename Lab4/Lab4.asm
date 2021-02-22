@@ -111,12 +111,12 @@
 
    prompt: .asciiz "You entered the file:\n"                                                  # A string to print when user input file name in the program argument
    
-   error: .asciiz "\nERROR: Invalid program argument \n"                                      # A string to print when there is an error when it is a invalid file name
+   error: .asciiz "\nERROR: Invalid program argument. \n"                                      # A string to print when there is an error when it is a invalid file name
    
    mismatch: .asciiz "\nERROR - There is a brace mismatch: "                                  # A string to print when there is a mismatch (first half) for what the brace looks like
    mismatch_1: .asciiz " at index "                                                           # A string to print when there is a mismatch (second half) this is the index location
                                                                                               
-   stacked_braces: .asciiz "\nERROR - Braces(s) still on stack: "                             # A string to print when there are braces that are stacked
+   stacked_braces: .asciiz "\nERROR - Brace(s) still on stack: "                             # A string to print when there are braces that are stacked
                                                                                               
    success: .asciiz "\nSUCCESS: There are "                                                   # A string to print when there is a success to matched braces (first half)
    success_1: .asciiz " of braces. \n"                                                        # A string to print when there is a succes to matched braces indicating how many pairs there are (second half)
