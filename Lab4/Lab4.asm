@@ -351,7 +351,7 @@
          move $a0, $s0                                                      # Move file from $s0 to $a0
          syscall                                                            # Execute close_file
       
-      program_exit:                                                          # To exit the program
+      program_exit:                                                         # To exit the program
       li $v0, 10                                                            # Syscall to exit the program (11)
       syscall                                                               # Execute the folowing
    
