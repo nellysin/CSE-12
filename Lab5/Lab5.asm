@@ -29,6 +29,9 @@
 #	%y: register to store 0x000000YY in
 .macro getCoordinates(%input %x %y)
 	# YOUR CODE HERE
+	srl %x, %input, 16                   # shift right logical to get 0x000000XX store it in x
+	andi %x, %x, 0xFF                   # "and" logic to x
+	andi %y, %input, 0xFF                   # "and" logic to x
 .end_macro
 
 # Macro that takes Coordinates in (%x,%y) where
@@ -39,7 +42,8 @@
 #	%y: register containing 0x000000YY
 #	%output: register to store 0x00XX00YY in
 .macro formatCoordinates(%output %x %y)
-	# YOUR CODE HERE
+	sll %output, %x, 16                                 # to restore 00XX0000 from x to output
+	addiu %output, %output, %y                         # add x and y to output
 .end_macro 
 
 # Macro that converts pixel coordinate to address
@@ -50,7 +54,11 @@
 #	%origin: register containing address of (0, 0)
 #	%output: register to store memory address in
 .macro getPixelAddress(%output %x %y %origin)
-	# YOUR CODE HERE
+         loop_address:
+            add %output, %x, 128                          # This is adding (x + 128) and storing it to output
+            mul %output, %y, %output                      # From output multiply %y and store to output
+            mul %output, %output, 4                       # From output multiply by 4 and store to output
+            add %output, %output, %origin                 # From output add origin andstore to output
 .end_macro
 
 
@@ -75,7 +83,17 @@ syscall
 #	No register outputs
 #*****************************************************
 clear_bitmap: nop
-	# YOUR CODE HERE, only use t registers (and a, v where appropriate)
+	# YOUR CODE HERE, only use t registers (and a, v where appropriate)    
+	   li $t3, 0                # counter
+	   li $t4, 16384            # when to stop counting
+	   lw $t0, originAddress    # load from origin address
+	   
+	   fill_bitmap:
+	      sw $a0, 0($t0)           # store the color into the address of the origin address
+	      addiu $t0, $t0, 4        # increment the origin address by 4
+	      addi $t3, $t3, 1         # increment counter
+	      bne $t3, $t4, fill_bitmap  # if counter does not equal to 128 then repeat fill_bitmap
+
  	jr $ra
 
 #*****************************************************
@@ -90,6 +108,13 @@ clear_bitmap: nop
 #*****************************************************
 draw_pixel: nop
 	# YOUR CODE HERE, only use t registers (and a, v where appropriate)
+        getCoordinates($a0, $t0, $t1)
+        beqz $t0, y_zero
+           beqz $t1, cyan_pixel
+          
+        cyan_pixel:
+           format
+        
 	jr $ra
 	
 #*****************************************************
