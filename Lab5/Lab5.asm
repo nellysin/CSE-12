@@ -287,24 +287,32 @@ draw_crosshair: nop
 	
 	# get current color of pixel at the intersection, store it in s4
 	# YOUR CODE HERE, only use the s0-s4 registers (and a, v where appropriate)
-	lw $s6, originAddress
-	getPixelAddress($s4, $s2, $s3, $s6)
-	sw $s1, 0($s4)
+	lw $s4, originAddress
+	
+	getPixelAddress($a0, $s2, $s3, $s4)
+	
+	lw $s4, 0($a0)
 	
 	# draw horizontal line (by calling your `draw_horizontal_line`) function
 	# YOUR CODE HERE, only use the s0-s4 registers (and a, v where appropriate)
 	move $a0, $s3
+	move $a1, $s1
 	jal draw_horizontal_line
 	
 	# draw vertical line (by calling your `draw_vertical_line`) function
 	# YOUR CODE HERE, only use the s0-s4 registers (and a, v where appropriate)
 	move $a0, $s2
+	move $a1, $s1
         jal draw_vertical_line
 
 	# restore pixel at the intersection to its previous color
 	# YOUR CODE HERE, only use the s0-s4 registers (and a, v where appropriate)
-	getPixelAddress($a0, $s2, $s3, $s6)
-
+	lw $a2, originAddress
+	
+	getPixelAddress($a0, $s2, $s3, $a2)
+	
+	sw $s4, 0($a0)
+	
 	move $sp $s5
 	pop($s5)
 	pop($s4)
