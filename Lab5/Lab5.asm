@@ -121,7 +121,7 @@ draw_pixel: nop
 	getPixelAddress($a0, $t1, $t2, $t0)            # use getPixelAddress 
 	
 	sw $a1, 0($a0)                                 # store the color into the address
-	
+
 	pop($ra)                                       # pop $ra
 	pop($t2)                                       # pop $t2 off stack
 	pop($t1)
@@ -141,6 +141,7 @@ draw_pixel: nop
 #*****************************************************
 get_pixel: nop
 	# YOUR CODE HERE, only use t registers (and a, v where appropriate)
+	
 	push($t2)                                 # push $t2 to the stack
 	push($t0)                                 # push $t0
 	push($t1)
@@ -171,34 +172,38 @@ get_pixel: nop
 #*****************************************************
 draw_horizontal_line: nop
 	# YOUR CODE HERE, only use t registers (and a, v where appropriate)
+	push($t4)
+	push($t3)
+	push($a0)                                      # push $a0 to stack
 	push($t0)
 	push($t1)
 	push($t2)
-	push($t3)
-	push($t4)
-	push($a0)
 	push($ra)
 	
+	lw $t0, originAddress                          # load the origin address to $t0
 	
-	lw $t0, originAddress                 # load the origin address to $t0
+	getPixelAddress($a0, $zero, $a0, $t0)            # use getPixelAddress 
 	
-	li $t1, 0x00000000
-	move $t2, $a0
-	formatCoordinats($a0, $t1, $t2)
-	getCoordinates($a0, $t3, $t4)
-	getPixelAddress($a0, $t3, $t4, $t0)     # getPixelAddress from $a0 and origin, and $t0
+	sw $a1, 0($a0)                                 # store the color into the address
+	
+	li $t3, 0                                      # counter
+	li $t4, 128                                    # when to stop counting
+ 
+	fill_horizontal: nop
+           sw $a1, 0($a0)                              # store the color into the address of the origin address
+           addiu $a0, $a0, 4                           # increment the origin address by 4
+           addi $t3, $t3, 1                            # increment counter
+           bne $t3, $t4, fill_horizontal               # if counter does not equal to 16384 then repeat fill_bitmap
 
-	sw $a1, 0($a0)
-	
-	pop($ra)
-	pop($a0)
-	pop($t4)
-	pop($t3)
-	pop($t2)
+	pop($ra)                                       # pop $ra
+	pop($t2)                                       # pop $t2 off stack
 	pop($t1)
 	pop($t0)
-	
-	jr $ra                                 # else jump to address
+        pop($a0)
+        pop($t3)
+        pop($t4)
+        
+        jr $ra                                         # jump to register
 
 
 #*****************************************************
@@ -211,9 +216,46 @@ draw_horizontal_line: nop
 #	No register outputs
 #*****************************************************
 draw_vertical_line: nop
-	# YOUR CODE HERE, only use t registers (and a, v where appropriate)
+        push($t6)
+        push($t5)
+	push($t4)
+	push($t3)
+	push($a0)                                      # push $a0 to stack
+	push($t0)
+	push($t1)
+	push($t2)
+	push($ra)
 	
-	jr $ra
+	lw $t0, originAddress                          # load the origin address to $t0
+	move $t5, $a0
+	#getCoordinates($a0, $t5, $t6)
+	li $t6, 0x00000000
+	getPixelAddress($a0, $t5, $t6, $t0)            # use getPixelAddress 
+	
+	sw $a1, 0($a0)                                 # store the color into the address
+	
+	li $t3, 0                                      # counter
+	li $t4, 128                                    # when to stop counting
+
+	fill_vertical: nop
+	   sw $a1, 0($a0)                              # store the color into the address of the origin address
+	   addiu $t6, $t6, 1                           # increment the y-axis by 1
+	   getPixelAddress($a0, $t5, $t6, $t0)         # use getPixelAddress 
+           
+           addi $t3, $t3, 1                            # increment counter
+           bne $t3, $t4, fill_vertical                 # if counter does not equal to 128 then repeat fill_bitmap
+
+	pop($ra)                                       # pop $ra
+	pop($t2)                                       # pop $t2 off stack
+	pop($t1)
+	pop($t0)
+        pop($a0)
+        pop($t3)
+        pop($t4)
+        pop($t5)
+        pop($t6)
+        jr $ra                                         # jump to register
+
  	
 
 
@@ -245,15 +287,23 @@ draw_crosshair: nop
 	
 	# get current color of pixel at the intersection, store it in s4
 	# YOUR CODE HERE, only use the s0-s4 registers (and a, v where appropriate)
-
+	lw $s6, originAddress
+	getPixelAddress($s4, $s2, $s3, $s6)
+	sw $s1, 0($s4)
+	
 	# draw horizontal line (by calling your `draw_horizontal_line`) function
 	# YOUR CODE HERE, only use the s0-s4 registers (and a, v where appropriate)
-
+	move $a0, $s3
+	jal draw_horizontal_line
+	
 	# draw vertical line (by calling your `draw_vertical_line`) function
 	# YOUR CODE HERE, only use the s0-s4 registers (and a, v where appropriate)
+	move $a0, $s2
+        jal draw_vertical_line
 
 	# restore pixel at the intersection to its previous color
 	# YOUR CODE HERE, only use the s0-s4 registers (and a, v where appropriate)
+	getPixelAddress($a0, $s2, $s3, $s6)
 
 	move $sp $s5
 	pop($s5)
