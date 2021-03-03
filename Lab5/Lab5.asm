@@ -1,3 +1,16 @@
+#############################################################################
+# Created by:   Sin, Nelly                                                    
+#                nesin
+#                3 March 2021
+#                                                                            
+# Assignment:   Lab 5: Functions and Graphs                                 
+#                CSE 12/L, Computer Systems and Assembly Language           
+#                UC Santa Cruz, Winter 2021                                 
+# Description:  This program prints out an image on bitmap                  
+#                                                                           
+# Notes:        This program is intended to be run from the MARS IDE        
+#############################################################################
+
 # Winter 2021 CSE12 Lab5 Template
 ######################################################
 # Macros for instructor use (you shouldn't need these)
@@ -42,8 +55,8 @@
 #	%y: register containing 0x000000YY
 #	%output: register to store 0x00XX00YY in
 .macro formatCoordinates(%output %x %y)
-	sll %output, %x, 16                              # shift left logical to restore 00XX0000 from x to output
-	add %output, %output, %y                         # add x and y to output
+	sll %output, %x, 16                              # Shift left logical to restore 00XX0000 from x to output
+	add %output, %output, %y                         # Add x and y to output
 .end_macro 
 
 # Macro that converts pixel coordinate to address
@@ -84,17 +97,17 @@ syscall
 #*****************************************************
 clear_bitmap: nop
 	# YOUR CODE HERE, only use t registers (and a, v where appropriate)    
-	   li $t3, 0                # counter
-	   li $t4, 16384            # when to stop counting
-	   lw $t0, originAddress    # load from origin address
+	   li $t3, 0                                      # counter for recursion (fill_bitmap)
+	   li $t4, 16384                                  # when to stop counting
+	   lw $t0, originAddress                          # load from origin address
 	   
-	   fill_bitmap: nop
-	      sw $a0, 0($t0)           # store the color into the address of the origin address
-	      addiu $t0, $t0, 4        # increment the origin address by 4
-	      addi $t3, $t3, 1         # increment counter
-	      bne $t3, $t4, fill_bitmap  # if counter does not equal to 16384 then repeat fill_bitmap
+	   fill_bitmap: nop                               # recursion for filling the bitmap 
+	      sw $a0, 0($t0)                              # store the color into the address of the origin address
+	      addiu $t0, $t0, 4                           # increment the origin address by 4
+	      addi $t3, $t3, 1                            # increment counter
+	      bne $t3, $t4, fill_bitmap                   # if counter does not equal to 16384 then repeat fill_bitmap
 
- 	jr $ra
+ 	jr $ra                                            # jump to register
 
 #*****************************************************
 # draw_pixel: Given a coordinate in $a0, sets corresponding 
@@ -108,27 +121,27 @@ clear_bitmap: nop
 #*****************************************************
 draw_pixel: nop
 	# YOUR CODE HERE, only use t registers (and a, v where appropriate)
-	push($a0)                                      # push $a0 to stack
-	push($t0)
-	push($t1)
-	push($t2)
-	push($ra)
+	push($a0)                                         # use macros push for $a0
+	push($t0)                                         # use macros push for $t0
+	push($t1)                                         # use macros push for $t1
+	push($t2)                                         # use macros push for $t2
+	push($ra)                                         # use macros push for $ra
 	
-	lw $t0, originAddress                          # load the origin address to $t0
+	lw $t0, originAddress                             # load the origin address to $t0
         
-	getCoordinates($a0, $t1, $t2)                  # get the x and y from $a0
+	getCoordinates($a0, $t1, $t2)                     # get the x and y from $a0
 	
-	getPixelAddress($a0, $t1, $t2, $t0)            # use getPixelAddress 
+	getPixelAddress($a0, $t1, $t2, $t0)               # use getPixelAddress 
 	
-	sw $a1, 0($a0)                                 # store the color into the address
+	sw $a1, 0($a0)                                    # store the color into the address
 
-	pop($ra)                                       # pop $ra
-	pop($t2)                                       # pop $t2 off stack
-	pop($t1)
-	pop($t0)
-        pop($a0)
+	pop($ra)                                          # use macros to pop $ra
+	pop($t2)                                          # use macros to pop $t2
+	pop($t1)                                          # use macros to pop $t1
+	pop($t0)                                          # use macros to pop $t0
+        pop($a0)                                          # use macros to pop $a0
 	
-        jr $ra                         # jump to register
+        jr $ra                                            # jump to register
 
 #*****************************************************
 # get_pixel:
@@ -142,24 +155,25 @@ draw_pixel: nop
 get_pixel: nop
 	# YOUR CODE HERE, only use t registers (and a, v where appropriate)
 	
-	push($t2)                                 # push $t2 to the stack
-	push($t0)                                 # push $t0
-	push($t1)
-	push($ra)
+	push($t2)                                      # use macros push for $t2
+	push($t0)                                      # use macros push for $t0
+	push($t1)                                      # use macros push for $t1
+	push($ra)                                      # use macros push for $ra
 
-	lw $t2, originAddress                       # load origin address
+	lw $t2, originAddress                          # load origin address
 	
-	getCoordinates($a0, $t0, $t1)              # get coordinate of given address
-	getPixelAddress($a0, $t0, $t1, $t2)        # get address with origin address by getPixelAddress
+	getCoordinates($a0, $t0, $t1)                  # get coordinate of given address
+	getPixelAddress($a0, $t0, $t1, $t2)            # get address with origin address by getPixelAddress
 	
-	lw $v0, 0($a0)                             # load the color from the given coodinate (?)
+	lw $v0, 0($a0)                                 # load the color from the given coodinate (?)
 	
 	
-	pop($ra)                                   # pop $ra
-	pop($t1)                                   # pop $a0 from stack
-	pop($t0)
-	pop($t2)
-	jr $ra                                     # jump to the register
+	pop($ra)                                       # use macros to pop $ra
+	pop($t1)                                       # use macros to pop $t1
+	pop($t0)                                       # use macros to pop $t0
+	pop($t2)                                       # use macros to pop $t2
+	
+	jr $ra                                         # jump to the register
  
 #*****************************************************
 # draw_horizontal_line: Draws a horizontal line
@@ -172,21 +186,21 @@ get_pixel: nop
 #*****************************************************
 draw_horizontal_line: nop
 	# YOUR CODE HERE, only use t registers (and a, v where appropriate)
-	push($t4)
-	push($t3)
-	push($a0)                                      # push $a0 to stack
-	push($t0)
-	push($t1)
-	push($t2)
-	push($ra)
+	push($t4)                                      # use macros push for $t4
+	push($t3)                                      # use macros push for $t3
+	push($a0)                                      # use macros push for $a0
+	push($t0)                                      # use macros push for $t0
+	push($t1)                                      # use macros push for $t1
+	push($t2)                                      # use macros push for $t2
+	push($ra)                                      # use macros push for $ra
 	
 	lw $t0, originAddress                          # load the origin address to $t0
 	
-	getPixelAddress($a0, $zero, $a0, $t0)            # use getPixelAddress 
+	getPixelAddress($a0, $zero, $a0, $t0)          # use getPixelAddress 
 	
 	sw $a1, 0($a0)                                 # store the color into the address
 	
-	li $t3, 0                                      # counter
+	li $t3, 0                                      # counter for the recursion (fill_horizontal)
 	li $t4, 128                                    # when to stop counting
  
 	fill_horizontal: nop
@@ -195,13 +209,13 @@ draw_horizontal_line: nop
            addi $t3, $t3, 1                            # increment counter
            bne $t3, $t4, fill_horizontal               # if counter does not equal to 16384 then repeat fill_bitmap
 
-	pop($ra)                                       # pop $ra
-	pop($t2)                                       # pop $t2 off stack
-	pop($t1)
-	pop($t0)
-        pop($a0)
-        pop($t3)
-        pop($t4)
+	pop($ra)                                       # use macros to pop $ra
+	pop($t2)                                       # use macros to pop $t2
+	pop($t1)                                       # use macros to pop $t1
+	pop($t0)                                       # use macros to pop $t0
+        pop($a0)                                       # use macros to pop $a0
+        pop($t3)                                       # use macros to pop $t3
+        pop($t4)                                       # use macros to pop $t4
         
         jr $ra                                         # jump to register
 
@@ -215,26 +229,25 @@ draw_horizontal_line: nop
 # Outputs:
 #	No register outputs
 #*****************************************************
-draw_vertical_line: nop
-        push($t6)
-        push($t5)
-	push($t4)
-	push($t3)
-	push($a0)                                      # push $a0 to stack
-	push($t0)
-	push($t1)
-	push($t2)
-	push($ra)
+draw_vertical_line: nop                                
+        push($t6)                                      # use macros push for $t6
+        push($t5)                                      # use macros push for $t5
+	push($t4)                                      # use macros push for $t4
+	push($t3)                                      # use macros push for $t3
+	push($a0)                                      # use macros push for $a0
+	push($t0)                                      # use macros push for $t0
+	push($t1)                                      # use macros push for $t1
+	push($t2)                                      # use macros push for $t2
+	push($ra)                                      # use macros push for $ra
 	
 	lw $t0, originAddress                          # load the origin address to $t0
-	move $t5, $a0
-	#getCoordinates($a0, $t5, $t6)
-	li $t6, 0x00000000
+	move $t5, $a0                                  # move the x coordinate into $t5
+	li $t6, 0x00000000                             # the y coordinate and assume x is started at 0
 	getPixelAddress($a0, $t5, $t6, $t0)            # use getPixelAddress 
 	
 	sw $a1, 0($a0)                                 # store the color into the address
 	
-	li $t3, 0                                      # counter
+	li $t3, 0                                      # a counter for the recursion (fill_vertical)
 	li $t4, 128                                    # when to stop counting
 
 	fill_vertical: nop
@@ -245,15 +258,16 @@ draw_vertical_line: nop
            addi $t3, $t3, 1                            # increment counter
            bne $t3, $t4, fill_vertical                 # if counter does not equal to 128 then repeat fill_bitmap
 
-	pop($ra)                                       # pop $ra
-	pop($t2)                                       # pop $t2 off stack
-	pop($t1)
-	pop($t0)
-        pop($a0)
-        pop($t3)
-        pop($t4)
-        pop($t5)
-        pop($t6)
+	pop($ra)                                       # use macros to pop $ra
+	pop($t2)                                       # use macros to pop $t2
+	pop($t1)                                       # use macros to pop $t1 
+	pop($t0)                                       # use macros to pop $t0 
+        pop($a0)                                       # use macros to pop $a0 
+        pop($t3)                                       # use macros to pop $t3
+        pop($t4)                                       # use macros to pop $t4
+        pop($t5)                                       # use macros to pop $t5
+        pop($t6)                                       # use macros to pop $t6
+        
         jr $ra                                         # jump to register
 
  	
@@ -287,31 +301,31 @@ draw_crosshair: nop
 	
 	# get current color of pixel at the intersection, store it in s4
 	# YOUR CODE HERE, only use the s0-s4 registers (and a, v where appropriate)
-	lw $s4, originAddress
+	lw $s4, originAddress                               # load word of the orgin address 
 	
-	getPixelAddress($a0, $s2, $s3, $s4)
+	getPixelAddress($a0, $s2, $s3, $s4)                 # use macros getPixelAddress to find intersection
 	
-	lw $s4, 0($a0)
+	lw $s4, 0($a0)                                      # load word from $a0 to $s4
 	
 	# draw horizontal line (by calling your `draw_horizontal_line`) function
 	# YOUR CODE HERE, only use the s0-s4 registers (and a, v where appropriate)
-	move $a0, $s3
-	move $a1, $s1
-	jal draw_horizontal_line
+	move $a0, $s3                                       # move $s3 to $a0 as the y coordinate
+	move $a1, $s1                                       # move $s1 to $a0 as the color
+	jal draw_horizontal_line                            # jump and link to draw_horizontal_line
 	
 	# draw vertical line (by calling your `draw_vertical_line`) function
 	# YOUR CODE HERE, only use the s0-s4 registers (and a, v where appropriate)
-	move $a0, $s2
-	move $a1, $s1
-        jal draw_vertical_line
+	move $a0, $s2                                       # move $s2 to $a0 as the x coordinate
+	move $a1, $s1                                       # move $s1 to $a0
+        jal draw_vertical_line                              # jump and link to draw_vertical_line
 
 	# restore pixel at the intersection to its previous color
 	# YOUR CODE HERE, only use the s0-s4 registers (and a, v where appropriate)
-	lw $a2, originAddress
+	lw $a2, originAddress                               # load the originAddress to $a2
 	
-	getPixelAddress($a0, $s2, $s3, $a2)
+	getPixelAddress($a0, $s2, $s3, $a2)                 # get the address to the intersection
 	
-	sw $s4, 0($a0)
+	sw $s4, 0($a0)                                      # store the word from $s4 (color) to $a0
 	
 	move $sp $s5
 	pop($s5)
