@@ -42,8 +42,8 @@
 #	%y: register containing 0x000000YY
 #	%output: register to store 0x00XX00YY in
 .macro formatCoordinates(%output %x %y)
-	sll %output, %x, 16                                 # to restore 00XX0000 from x to output
-	addiu %output, %output, %y                         # add x and y to output
+	sll %output, %x, 16                              # shift left logical to restore 00XX0000 from x to output
+	add %output, %output, %y                         # add x and y to output
 .end_macro 
 
 # Macro that converts pixel coordinate to address
@@ -55,8 +55,8 @@
 #	%output: register to store memory address in
 .macro getPixelAddress(%output %x %y %origin)
          loop_address:
-            add %output, %x, 128                          # This is adding (x + 128) and storing it to output
-            mul %output, %y, %output                      # From output multiply %y and store to output
+            mul %output, %y, 128                          # This is adding (x + 128) and storing it to output
+            add %output, %output, %x                      # From the output add x
             mul %output, %output, 4                       # From output multiply by 4 and store to output
             add %output, %output, %origin                 # From output add origin andstore to output
 .end_macro
@@ -88,11 +88,11 @@ clear_bitmap: nop
 	   li $t4, 16384            # when to stop counting
 	   lw $t0, originAddress    # load from origin address
 	   
-	   fill_bitmap:
+	   fill_bitmap: nop
 	      sw $a0, 0($t0)           # store the color into the address of the origin address
 	      addiu $t0, $t0, 4        # increment the origin address by 4
 	      addi $t3, $t3, 1         # increment counter
-	      bne $t3, $t4, fill_bitmap  # if counter does not equal to 128 then repeat fill_bitmap
+	      bne $t3, $t4, fill_bitmap  # if counter does not equal to 16384 then repeat fill_bitmap
 
  	jr $ra
 
@@ -108,15 +108,28 @@ clear_bitmap: nop
 #*****************************************************
 draw_pixel: nop
 	# YOUR CODE HERE, only use t registers (and a, v where appropriate)
-        getCoordinates($a0, $t0, $t1)
-        beqz $t0, y_zero
-           beqz $t1, cyan_pixel
-          
-        cyan_pixel:
-           format
-        
-	jr $ra
+	push($a0)                                      # push $a0 to stack
+	push($t0)
+	push($t1)
+	push($t2)
+	push($ra)
 	
+	lw $t0, originAddress                          # load the origin address to $t0
+        
+	getCoordinates($a0, $t1, $t2)                  # get the x and y from $a0
+	
+	getPixelAddress($a0, $t1, $t2, $t0)            # use getPixelAddress 
+	
+	sw $a1, 0($a0)                                 # store the color into the address
+	
+	pop($ra)                                       # pop $ra
+	pop($t2)                                       # pop $t2 off stack
+	pop($t1)
+	pop($t0)
+        pop($a0)
+	
+        jr $ra                         # jump to register
+
 #*****************************************************
 # get_pixel:
 #  Given a coordinate, returns the color of that pixel	
@@ -128,8 +141,25 @@ draw_pixel: nop
 #*****************************************************
 get_pixel: nop
 	# YOUR CODE HERE, only use t registers (and a, v where appropriate)
-	jr $ra
+	push($t2)                                 # push $t2 to the stack
+	push($t0)                                 # push $t0
+	push($t1)
+	push($ra)
 
+	lw $t2, originAddress                       # load origin address
+	
+	getCoordinates($a0, $t0, $t1)              # get coordinate of given address
+	getPixelAddress($a0, $t0, $t1, $t2)        # get address with origin address by getPixelAddress
+	
+	lw $v0, 0($a0)                             # load the color from the given coodinate (?)
+	
+	
+	pop($ra)                                   # pop $ra
+	pop($t1)                                   # pop $a0 from stack
+	pop($t0)
+	pop($t2)
+	jr $ra                                     # jump to the register
+ 
 #*****************************************************
 # draw_horizontal_line: Draws a horizontal line
 # ----------------------------------------------------
@@ -141,7 +171,34 @@ get_pixel: nop
 #*****************************************************
 draw_horizontal_line: nop
 	# YOUR CODE HERE, only use t registers (and a, v where appropriate)
- 	jr $ra
+	push($t0)
+	push($t1)
+	push($t2)
+	push($t3)
+	push($t4)
+	push($a0)
+	push($ra)
+	
+	
+	lw $t0, originAddress                 # load the origin address to $t0
+	
+	li $t1, 0x00000000
+	move $t2, $a0
+	formatCoordinats($a0, $t1, $t2)
+	getCoordinates($a0, $t3, $t4)
+	getPixelAddress($a0, $t3, $t4, $t0)     # getPixelAddress from $a0 and origin, and $t0
+
+	sw $a1, 0($a0)
+	
+	pop($ra)
+	pop($a0)
+	pop($t4)
+	pop($t3)
+	pop($t2)
+	pop($t1)
+	pop($t0)
+	
+	jr $ra                                 # else jump to address
 
 
 #*****************************************************
@@ -155,7 +212,9 @@ draw_horizontal_line: nop
 #*****************************************************
 draw_vertical_line: nop
 	# YOUR CODE HERE, only use t registers (and a, v where appropriate)
- 	jr $ra
+	
+	jr $ra
+ 	
 
 
 #*****************************************************

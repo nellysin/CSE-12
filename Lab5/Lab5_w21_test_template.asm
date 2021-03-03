@@ -102,11 +102,13 @@ pixel_test: nop
 	li $a0, 0x00000000
 	lw $a1, cyan
 	jal draw_pixel
+
 	
 	# yellow point at  (127,127)
 	li $a0, 0x007F007F
 	lw $a1, yellow
 	jal draw_pixel
+
 	
 	print_str("\n\nGet_pixel($a0 = 0x00000000) should return: 0x0000ffff\nYour get_pixel($a0 = 0x00010001) returns:  ")
 	li $a0, 0x00000000
