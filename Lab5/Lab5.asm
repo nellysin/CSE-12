@@ -43,8 +43,8 @@
 .macro getCoordinates(%input %x %y)
 	# YOUR CODE HERE
 	srl %x, %input, 16                   # shift right logical to get 0x000000XX store it in x
-	andi %x, %x, 0xFF                   # "and" logic to x
-	andi %y, %input, 0xFF                   # "and" logic to x
+	andi %x, %x, 0xFF                    # "and" logic to x
+	andi %y, %input, 0xFF                # "and" logic to x
 .end_macro
 
 # Macro that takes Coordinates in (%x,%y) where
@@ -55,8 +55,8 @@
 #	%y: register containing 0x000000YY
 #	%output: register to store 0x00XX00YY in
 .macro formatCoordinates(%output %x %y)
-	sll %output, %x, 16                              # Shift left logical to restore 00XX0000 from x to output
-	add %output, %output, %y                         # Add x and y to output
+	sll %output, %x, 16                         # Shift left logical to restore 00XX0000 from x to output
+	add %output, %output, %y                    # Add x and y to output
 .end_macro 
 
 # Macro that converts pixel coordinate to address
@@ -67,7 +67,7 @@
 #	%origin: register containing address of (0, 0)
 #	%output: register to store memory address in
 .macro getPixelAddress(%output %x %y %origin)
-         loop_address:
+         loop_address:                                    # Using the coordinates find the address
             mul %output, %y, 128                          # This is adding (x + 128) and storing it to output
             add %output, %output, %x                      # From the output add x
             mul %output, %output, 4                       # From output multiply by 4 and store to output
